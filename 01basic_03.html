@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="x-ua-compatible" content="IE=Edge">
+    <meta name="viewport" content="width=device-width, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <script type="text/javascript" src="js/build/enchant.js"></script>
+    <script type="text/javascript" src="js/build/plugins/ui.enchant.js"></script>
+    <style type="text/css">
+        body {
+            margin: 0;
+            padding: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <script>
+        /**
+     * enchant();
+     * Preparation for using enchant.js.
+     * (Exporting enchant.js class to global namespace.
+     *  ex. enchant.Sprite -> Sprite etc..)
+     *
+     * enchant.js を使う前に必要な処理。
+     * (enchant.js 本体や、読み込んだプラグインの中で定義されている enchant.Foo, enchant.Plugin.Bar などのクラスを、
+     *  それぞれグローバルの Foo, Bar にエクスポートする。)
+     */
+        enchant();
+
+        /*
+         * window.onload
+         *
+         * The function which will be executed after loading page.
+         * Command in enchant.js such as "new Core();" will cause an error if executed before entire page is loaded.
+         *
+         * ページがロードされた際に実行される関数。
+         * すべての処理はページがロードされてから行うため、 window.onload の中で実行する。
+         * 特に new Core(); は、<body> タグが存在しないとエラーになるので注意。
+         */
+        window.onload = function () {
+            /**
+             * new Core(width, height)
+             *
+             * Make instance of enchant.Core class. Set window size to 320 x 320
+             * Core オブジェクトを作成する。
+             * 画面の大きさは 320ピクセル x 320ピクセル に設定する。
+             */
+            var game = new Core(320, 320);
+
+            /**
+             * Core.fps
+             *
+             * Set fps (frame per second) in this game to 15.
+             * ゲームの fps (frame per second) を指定する。この場合、1秒間あたり15回画面が更新される。
+             */
+            game.fps = 20;
+
+            game.score = 0;
+
+            game.count = 0;
+            /**
+             * Core#preload
+             *
+             * You can preload all assets files before starting the game.
+             * Set needed file lists in relative/absolute path for attributes of Core#preload
+             * 必要なファイルを相対パスで引数に指定する。 ファイルはすべて、ゲームが始まる前にロードされる。
+             */
+            game.preload("chara1.png", "star_get.mp3", "map0.png", "icon0.png", "get_apple.mp3", "bomb.mp3","jump.mp3");
+
+            /**
+             * Core#onload
+             *
+             * ロードが完了した直後に実行される関数を指定している。
+             * onload プロパティは load イベントのリスナとして働くので、以下の2つの書き方は同じ意味。
+             *
+             * game.onload = function(){
+             *     // code
+             * }
+             *
+             * game.addEventListener("load", function(){
+             *     // code
+             * })
+             */
+            game.onload = function () {
+
+                var bg = new Sprite(320, 320);
+                bg.backgroundColor = "rgb(0,200,255)";
+                game.rootScene.addChild(bg);
+                var map = new Map(16, 16);
+                map.image = game.assets["map0.png"]
+                var blocks = [
+                    [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+                    [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+                    [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+                    [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+                    [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+                    [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+                    [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+                    [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+                    [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+                    [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+                    [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+                    [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+                    [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+                    [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+                    [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+                    [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+                    [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+                    [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+                    [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+                    [7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7]
+                ];
+                map.loadData(blocks);
+                game.rootScene.addChild(map);
+
+                var label_score = new Label("");
+                game.rootScene.addChild(label_score)
+                label_score.text = "スコア：" + game.score;
+                label_score.y = 0;
+                var label_time = new Label("");
+                game.rootScene.addChild(label_time)
+                label_time.text = "タイム：" + game.count;
+                label_time.y = 20;
+
+
+                var pad = new APad();
+                pad.x = 0;
+                pad.y = 190;
+                game.rootScene.addChild(pad);
+
+                /**
+                 * new Sprite(width, height)
+                 * スプライトオブジェクトを作成する。
+                 * Sprite は、Entity, Node, EventTarget を継承しており、それぞれのメソッドやプロパティを使うことができる。
+                 */
+                bear2 = new Sprite(32, 32);
+
+                /**
+                 * Sprite.image {Object}
+                 * Core#preload で指定されたファイルは、Core.assets のプロパティとして格納される。
+                 * Sprite.image にこれを代入することで、画像を表示することができる
+                 */
+                bear2.image = game.assets["chara1.png"];
+
+                /**
+                 * Node.x Node.y {Number}
+                 * x, y 座標を指定する。
+                 * viewport の大きさに合わせて画面が拡大縮小されている場合も、
+                 * オリジナルの座標系で指定できる。
+                 */
+                bear2.x = 80;
+                bear2.y = 272;
+
+                /**
+                 * Sprite.frame {Number}
+                 * (width, height) ピクセルの格子で指定された画像を区切り、
+                 * 左上から数えて frame 番目の画像を表示することができる。
+                 * デフォルトでは、0:左上の画像が表示される。
+                 * このサンプルでは、シロクマが立っている画像を表示する (chara1.gif 参照)。
+                 */
+                bear2.frame = 6;
+                /**
+                 * Group#addChild(node) {Function}
+                 * オブジェクトをノードツリーに追加するメソッド。
+                 * ここでは、クマの画像を表示するスプライトオブジェクトを、rootScene に追加している。
+                 * Core.rootScene は Group を継承した Scene クラスのインスタンスで、描画ツリーのルートになる特別な Scene オブジェクト。
+                 * この rootScene に描画したいオブジェクトを子として追加する (addChild) ことで、毎フレーム描画されるようになる。
+                 * 引数には enchant.Node を継承したクラス (Entity, Group, Scene, Label, Sprite..) を指定する。
+                 */
+                // game.rootScene.addChild(bear1);
+                game.rootScene.addChild(bear2);
+
+                /**
+                 * EventTarget#addEventListener(event, listener)
+                 * イベントに対するリスナを登録する。
+                 * リスナとして登録された関数は、指定されたイベントの発行時に実行される。
+                 * よく使うイベントには、以下のようなものがある。
+                 * - "touchstart" : タッチ/クリックされたとき
+                 * - "touchmove" : タッチ座標が動いた/ドラッグされたとき
+                 * - "touchend" : タッチ/クリックが離されたとき
+                 * - "enterframe" : 新しいフレームが描画される前
+                 * - "exitframe" : 新しいフレームが描画された後
+                 * enchant.js やプラグインに組み込まれたイベントは、それぞれのタイミングで自動で発行されるが、
+                 * EventTarget#dispatchEvent で任意のイベントを発行することもできる。
+                 *
+                 * ここでは、右に向かって走っていくアニメーションを表現するために、
+                 * 新しいフレームが描画される前に、毎回クマの画像を切り替え、x座標を1増やすという処理をリスナとして追加する。
+                 */
+
+
+
+                /**
+                 * タッチされると消える処理を実現するために、
+                 * touchstart イベントが起こったとき、クマが消える処理をリスナとして追加する。
+                 */
+                /**
+                 * クマを game.rootScene から削除する。
+                 * Group#addChild の逆は Group#removeChild。
+                 */
+                // game.rootScene.removeChild(bear1);
+                // console.log("いたい")
+
+                bear2.count = 0
+                bear2.switch = 0
+                bear2.addEventListener("enterframe", function () {
+                    this.speed = 10
+                    // console.log(pad.vx);
+                    this.x = this.x + this.speed * pad.vx
+                    if (pad.vx < -0.1 || pad.vx > 0.1) {
+                        this.switch++
+                        if (this.switch % 2 == 0) {
+                            this.frame = 6;
+                        } else {
+                            this.frame = 7
+                        }
+                        if(pad.vx<-0.1){
+                            this.scaleX = -1;
+
+                        } else {
+                            this.scaleX = 1;
+
+                        }
+                    }
+
+
+
+                    // if (game.input.left) {//左
+                    //     // console.log("左")
+                    //     if (this.count == 0) {
+                    //         this.frame = 6;
+                    //         this.count = 1;
+                    //     } else if (this.count == 1) {
+                    //         this.frame = 7;
+                    //         this.count = 0
+                    //     }
+                    //     this.x = this.x - this.speed;
+                    // }
+                    // if (game.input.right) {//右
+                    //     if (this.count == 0) {
+                    //         this.frame = 6;
+                    //         this.count = 1;
+                    //     } else if (this.count == 1) {
+                    //         this.frame = 7;
+                    //         this.count = 0
+                    //     }
+                    //     this.x = this.x + this.speed;
+                    // }
+                    if (this.x > 280) {
+                        this.x = this.x - this.speed
+                    } else if (this.x < 0) {
+                        this.x = this.x + this.speed
+                    }
+
+
+
+                    // console.log("y=" + this.y)
+                    // console.log(this.fly)
+                    // if (game.input.up) {//ジャンプ
+                    //     if (this.status != "JUMP") {
+                    //         this.time = 0;
+
+                    //     }
+                    //     this.status = "JUMP";
+                    // }
+
+
+                    if (pad.vy <= -0.5) {//ジャンプ
+                        if (this.status != "JUMP") {
+                            this.time = 0;
+
+                        }
+                        this.status = "JUMP";
+                    }
+                    console.log(this.status);
+                    if (this.status == "JUMP") {
+                        // console.log("this.time" + this.time)
+                        if (this.time >= 1 && this.time <= 8) {
+                            if (this.time==1){
+                                game.assets["jump.mp3"].play();
+                            }
+
+                            this.y = this.y - 8;
+                        } else if (this.time >= 9 && this.time <= 16) {
+                            this.y = this.y + 8
+                        } else if (this.time >= 16) {
+                            this.status = "WAIT";
+                        }
+                    }
+                    this.time++;
+
+
+                });
+
+                game.addApple = function (x, speed, frame) {
+                    var apple = new Sprite(16, 16);
+                    apple.image = game.assets["icon0.png"];
+                    apple.x = x;
+                    apple.y = -16;
+                    apple.frame = frame;
+                    apple.speed = speed;
+                    game.rootScene.addChild(apple);
+
+                    apple.addEventListener("enterframe", function () {
+                        apple.y += apple.speed;
+
+                        if (apple.y >= 290) {
+                            game.rootScene.removeChild(apple);
+                        }
+
+                        if (bear2.within(apple, 16)) {
+                            if (apple.frame == 15) {//リンゴ
+                                game.score++;
+                                game.assets["get_apple.mp3"].play();
+                            } else if (apple.frame == 24) {//爆弾
+                                game.assets["bomb.mp3"].play();
+                                game.stop();
+                            }
+                            label_score.text = "スコア：" + game.score;
+                            game.rootScene.removeChild(apple);
+                        }
+
+                    })
+                }
+                var a = 0;
+                var b = 0;
+                game.rootScene.addEventListener("enterframe", function () {
+
+                    label_time.text = "タイム：" + (500 - game.count);
+                    game.count++;
+                    //timeが5000を超えるとおしまい
+                    if (game.count > 500) {
+                        game.stop();
+                    }
+
+                    if (game.count % 20 == 0) {
+                        var x = Math.floor(Math.random() * 300);
+                        var speed = Math.floor(Math.random() * 5);
+                        var frame;
+
+
+                        if (Math.floor(Math.random() * 10) <= 2) {
+                            frame = 24;
+                            a++
+                        } else {
+                            frame = 15;
+                            b++
+                        }
+
+                        // console.log(a + ":" + b)
+                        game.addApple(x, speed, frame);
+                    }
+
+
+                });
+            };
+            /**
+             * Core#start
+             * ゲームを開始する。この関数を実行するまで、ゲームは待機状態となる。
+             * 代わりに Core#debug を使うことで、デバッグモードで起動することができる。
+             * Core#pause(); で一時停止し、 Core#resume(); で再開することができる。
+             */
+            game.start();
+        };
+
+    </script>
+</body>
+
+</html>
