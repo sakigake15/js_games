@@ -68,7 +68,7 @@
              * Set needed file lists in relative/absolute path for attributes of Core#preload
              * 必要なファイルを相対パスで引数に指定する。 ファイルはすべて、ゲームが始まる前にロードされる。
              */
-            game.preload("chara1.png", "star_get.mp3", "map0.png", "icon0.png", "get_apple.mp3", "bomb.mp3","jump.mp3");
+            game.preload("chara1.png", "star_get.mp3", "map0.png", "icon0.png", "get_apple.mp3", "bomb.mp3", "jump.mp3", "bg.png", "beem.mp3");
 
             /**
              * Core#onload
@@ -88,6 +88,7 @@
 
                 var bg = new Sprite(320, 400);
                 bg.backgroundColor = "rgb(0,200,255)";
+                bg.image = game.assets["bg.png"]
                 game.rootScene.addChild(bg);
                 var map = new Map(16, 16);
                 map.image = game.assets["map0.png"]
@@ -123,17 +124,19 @@
 
                 var label_score = new Label("");
                 game.rootScene.addChild(label_score)
-                label_score.text = "スコア：" + game.score;
+                label_score.font = "16px impact"
+                label_score.text = "score : " + game.score;
                 label_score.y = 0;
                 var label_time = new Label("");
                 game.rootScene.addChild(label_time)
-                label_time.text = "タイム：" + game.count;
+                label_time.font = "16px impact"
+                label_time.text = "time : " + game.count;
                 label_time.y = 20;
 
 
                 var pad = new APad();
                 pad.x = 200;
-                pad.y = 320;
+                pad.y = 310;
                 game.rootScene.addChild(pad);
 
                 /**
@@ -141,14 +144,14 @@
                  * スプライトオブジェクトを作成する。
                  * Sprite は、Entity, Node, EventTarget を継承しており、それぞれのメソッドやプロパティを使うことができる。
                  */
-                bear2 = new Sprite(32, 32);
+                bear = new Sprite(32, 32);
 
                 /**
                  * Sprite.image {Object}
                  * Core#preload で指定されたファイルは、Core.assets のプロパティとして格納される。
                  * Sprite.image にこれを代入することで、画像を表示することができる
                  */
-                bear2.image = game.assets["chara1.png"];
+                bear.image = game.assets["chara1.png"];
 
                 /**
                  * Node.x Node.y {Number}
@@ -156,8 +159,8 @@
                  * viewport の大きさに合わせて画面が拡大縮小されている場合も、
                  * オリジナルの座標系で指定できる。
                  */
-                bear2.x = 80;
-                bear2.y = 272;
+                bear.x = 80;
+                bear.y = 272;
 
                 /**
                  * Sprite.frame {Number}
@@ -166,7 +169,7 @@
                  * デフォルトでは、0:左上の画像が表示される。
                  * このサンプルでは、シロクマが立っている画像を表示する (chara1.gif 参照)。
                  */
-                bear2.frame = 6;
+                bear.frame = 6;
                 /**
                  * Group#addChild(node) {Function}
                  * オブジェクトをノードツリーに追加するメソッド。
@@ -176,7 +179,7 @@
                  * 引数には enchant.Node を継承したクラス (Entity, Group, Scene, Label, Sprite..) を指定する。
                  */
                 // game.rootScene.addChild(bear1);
-                game.rootScene.addChild(bear2);
+                game.rootScene.addChild(bear);
 
                 /**
                  * EventTarget#addEventListener(event, listener)
@@ -208,9 +211,9 @@
                 // game.rootScene.removeChild(bear1);
                 // console.log("いたい")
 
-                bear2.count = 0
-                bear2.switch = 0
-                bear2.addEventListener("enterframe", function () {
+                bear.count = 0
+                bear.switch = 0
+                bear.addEventListener("enterframe", function () {
                     this.speed = 10
                     // console.log(pad.vx);
                     this.x = this.x + this.speed * pad.vx
@@ -221,7 +224,7 @@
                         } else {
                             this.frame = 7
                         }
-                        if(pad.vx<-0.1){
+                        if (pad.vx < -0.1) {
                             this.scaleX = -1;
 
                         } else {
@@ -283,7 +286,7 @@
                     if (this.status == "JUMP") {
                         // console.log("this.time" + this.time)
                         if (this.time >= 1 && this.time <= 8) {
-                            if (this.time==1){
+                            if (this.time == 1) {
                                 game.assets["jump.mp3"].play();
                             }
 
@@ -304,36 +307,73 @@
                     apple.image = game.assets["icon0.png"];
                     apple.x = x;
                     apple.y = -16;
+                    apple.turn = 0
                     apple.frame = frame;
                     apple.speed = speed;
                     game.rootScene.addChild(apple);
 
                     apple.addEventListener("enterframe", function () {
                         apple.y += apple.speed;
+                        apple.rotation = apple.turn;
+                        apple.turn = apple.turn + 10;
 
                         if (apple.y >= 290) {
                             game.rootScene.removeChild(apple);
                         }
 
-                        if (bear2.within(apple, 16)) {
+                        if (bear.within(apple, 16)) {
                             if (apple.frame == 15) {//リンゴ
                                 game.score++;
+                                game.assets["get_apple.mp3"].play();
+                            } else if (apple.frame == 16) {//バナナ
+                                game.score = game.score + 3;
                                 game.assets["get_apple.mp3"].play();
                             } else if (apple.frame == 24) {//爆弾
                                 game.assets["bomb.mp3"].play();
                                 game.stop();
                             }
-                            label_score.text = "スコア：" + game.score;
+                            label_score.text = "score : " + game.score;
                             game.rootScene.removeChild(apple);
                         }
-
                     })
-                }
+
+                };
+
+                //ビーム
+                game.addBeem = function (y, speed) {
+                    var beem = new Sprite(16, 16);
+                    beem.image = game.assets["icon0.png"];
+                    beem.x = 320;
+                    beem.y = y;
+                    beem.turn = 0;
+                    beem.frame = 50;
+                    beem.speed = speed;
+                    game.rootScene.addChild(beem);
+
+                    beem.addEventListener("enterframe", function () {
+                        beem.x -= beem.speed;
+                        // beem.rotation = beem.turn;
+                        // beem.turn = beem.turn + 100;
+
+                        if (beem.x <= 0) {
+                            game.rootScene.removeChild(beem);
+                        }
+
+                        if (bear.within(beem, 16)) {
+                            game.assets["beem.mp3"].play();
+                            game.rootScene.removeChild(beem);
+                            game.stop();
+                        }
+                    })
+
+                };
+
+                //定期実行
                 var a = 0;
                 var b = 0;
                 game.rootScene.addEventListener("enterframe", function () {
 
-                    label_time.text = "タイム：" + (500 - game.count);
+                    label_time.text = "time : " + (500 - game.count);
                     game.count++;
                     //timeが5000を超えるとおしまい
                     if (game.count > 500) {
@@ -349,13 +389,24 @@
                         if (Math.floor(Math.random() * 10) <= 2) {
                             frame = 24;
                             a++
-                        } else {
+                        } else if (Math.floor(Math.random() * 10) <= 7) {
                             frame = 15;
                             b++
+                        } else {
+                            frame = 16;
                         }
 
                         // console.log(a + ":" + b)
                         game.addApple(x, speed, frame);
+                    }
+
+                    //ビームを横方向に出す
+                    if (game.count % 50 == 0) {
+                        var y = Math.floor(Math.random() * 96) + 208
+                        // var y =272;
+                        var speed = Math.floor(Math.random() * 5);
+
+                        game.addBeem(y, speed);
                     }
 
 
@@ -368,7 +419,8 @@
              * Core#pause(); で一時停止し、 Core#resume(); で再開することができる。
              */
             game.start();
-        };
+        }
+
 
     </script>
 </body>
