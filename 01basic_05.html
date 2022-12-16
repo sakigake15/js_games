@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="x-ua-compatible" content="IE=Edge">
+    <meta name="viewport" content="width=device-width, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <script type="text/javascript" src="js/build/enchant.js"></script>
+    <style type="text/css">
+        body {
+            margin: 0;
+            padding: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <script>
+        /**
+     * enchant();
+     * Preparation for using enchant.js.
+     * (Exporting enchant.js class to global namespace.
+     *  ex. enchant.Sprite -> Sprite etc..)
+     *
+     * enchant.js を使う前に必要な処理。
+     * (enchant.js 本体や、読み込んだプラグインの中で定義されている enchant.Foo, enchant.Plugin.Bar などのクラスを、
+     *  それぞれグローバルの Foo, Bar にエクスポートする。)
+     */
+        enchant();
+
+        /*
+         * window.onload
+         *
+         * The function which will be executed after loading page.
+         * Command in enchant.js such as "new Core();" will cause an error if executed before entire page is loaded.
+         *
+         * ページがロードされた際に実行される関数。
+         * すべての処理はページがロードされてから行うため、 window.onload の中で実行する。
+         * 特に new Core(); は、<body> タグが存在しないとエラーになるので注意。
+         */
+        window.onload = function () {
+            /**
+             * new Core(width, height)
+             *
+             * Make instance of enchant.Core class. Set window size to 320 x 320
+             * Core オブジェクトを作成する。
+             * 画面の大きさは 320ピクセル x 320ピクセル に設定する。
+             */
+            var game = new Core(320, 320);
+
+            /**
+             * Core.fps
+             *
+             * Set fps (frame per second) in this game to 15.
+             * ゲームの fps (frame per second) を指定する。この場合、1秒間あたり15回画面が更新される。
+             */
+            game.fps = 15;
+            game.count = 0
+            /**
+             * Core#preload
+             *
+             * You can preload all assets files before starting the game.
+             * Set needed file lists in relative/absolute path for attributes of Core#preload
+             * 必要なファイルを相対パスで引数に指定する。 ファイルはすべて、ゲームが始まる前にロードされる。
+             */
+            game.preload("chara1.png", "star_get.mp3", "icon0.png", "bg_1.png", "plane.png");
+
+            /**
+             * Core#onload
+             *
+             * ロードが完了した直後に実行される関数を指定している。
+             * onload プロパティは load イベントのリスナとして働くので、以下の2つの書き方は同じ意味。
+             *
+             * game.onload = function(){
+             *     // code
+             * }
+             *
+             * game.addEventListener("load", function(){
+             *     // code
+             * })
+             */
+            game.onload = function () {
+                /**
+                 * new Sprite(width, height)
+                 * スプライトオブジェクトを作成する。
+                 * Sprite は、Entity, Node, EventTarget を継承しており、それぞれのメソッドやプロパティを使うことができる。
+                 */
+                // plane1 = new Sprite(32, 32);
+                plane = new Sprite(48, 48);
+
+                var bg = new Sprite(320, 320)
+                bg.backgroundColor = "rgb(0,200,255)";
+                bg.image = game.assets["bg_1.png"]
+                bg.scaleY = 2;
+                bg.y = 160
+                game.rootScene.addChild(bg);
+
+                var label_time = new Label("");
+                game.rootScene.addChild(label_time)
+                label_time.font = "16px impact"
+                label_time.color = "white"
+                label_time.text = "score : " + game.count;
+                label_time.y = 0;
+                /**
+                 * Sprite.image {Object}
+                 * Core#preload で指定されたファイルは、Core.assets のプロパティとして格納される。
+                 * Sprite.image にこれを代入することで、画像を表示することができる
+                 */
+                // plane1.image = game.assets["chara1.png"];
+                plane.image = game.assets["plane.png"];
+
+                /**
+                 * Node.x Node.y {Number}
+                 * x, y 座標を指定する。
+                 * viewport の大きさに合わせて画面が拡大縮小されている場合も、
+                 * オリジナルの座標系で指定できる。
+                 */
+                // plane1.x = 0;
+                // plane1.y = 160;
+                plane.x = 80;
+                plane.y = 160;
+                plane.touchx = plane.x;
+                plane.touchy = plane.y;
+
+                /**
+                 * Sprite.frame {Number}
+                 * (width, height) ピクセルの格子で指定された画像を区切り、
+                 * 左上から数えて frame 番目の画像を表示することができる。
+                 * デフォルトでは、0:左上の画像が表示される。
+                 * このサンプルでは、シロクマが立っている画像を表示する (chara1.gif 参照)。
+                 */
+                // plane1.frame = 2;
+                plane.frame = 0;
+                /**
+                 * Group#addChild(node) {Function}
+                 * オブジェクトをノードツリーに追加するメソッド。
+                 * ここでは、クマの画像を表示するスプライトオブジェクトを、rootScene に追加している。
+                 * Core.rootScene は Group を継承した Scene クラスのインスタンスで、描画ツリーのルートになる特別な Scene オブジェクト。
+                 * この rootScene に描画したいオブジェクトを子として追加する (addChild) ことで、毎フレーム描画されるようになる。
+                 * 引数には enchant.Node を継承したクラス (Entity, Group, Scene, Label, Sprite..) を指定する。
+                 */
+                // game.rootScene.addChild(plane1);
+                game.rootScene.addChild(plane);
+
+
+                /**
+                 * EventTarget#addEventListener(event, listener)
+                 * イベントに対するリスナを登録する。
+                 * リスナとして登録された関数は、指定されたイベントの発行時に実行される。
+                 * よく使うイベントには、以下のようなものがある。
+                 * - "touchstart" : タッチ/クリックされたとき
+                 * - "touchmove" : タッチ座標が動いた/ドラッグされたとき
+                 * - "touchend" : タッチ/クリックが離されたとき
+                 * - "enterframe" : 新しいフレームが描画される前
+                 * - "exitframe" : 新しいフレームが描画された後
+                 * enchant.js やプラグインに組み込まれたイベントは、それぞれのタイミングで自動で発行されるが、
+                 * EventTarget#dispatchEvent で任意のイベントを発行することもできる。
+                 *
+                 * ここでは、右に向かって走っていくアニメーションを表現するために、
+                 * 新しいフレームが描画される前に、毎回クマの画像を切り替え、x座標を1増やすという処理をリスナとして追加する。
+                 */
+
+
+
+                bg.addEventListener(Event.TOUCH_START, function (e) {
+                    // r=0;
+                    plane.touchx = e.x - 24;
+                    plane.touchy = e.y - 24;
+                })
+
+
+                plane.addEventListener("enterframe", function () {
+                    var kyori_x = plane.touchx - plane.x;
+                    var kyori_y = plane.touchy - plane.y;
+                    var kakudo = Math.atan2(kyori_y, kyori_x);
+                    if (Math.abs(kyori_x) > 8 || Math.abs(kyori_y) > 8) {
+                        plane.x = Math.round(plane.x + Math.cos(kakudo) * 15)
+                        plane.y = Math.round(plane.y + Math.sin(kakudo) * 15);
+                    }
+
+                    if (this.age % 4 == 0) {
+                        this.frame = 0;
+
+                    } else if (this.age % 4 == 2) {
+                        this.frame = 0;
+                    }
+
+                    if (Math.abs(kyori_x) > 5 || Math.abs(kyori_y) > 5) {
+                        this.rotation = kakudo / Math.PI * 180 + 90
+
+                    }
+
+
+                    console.log(kakudo / Math.PI * 180);
+                })
+
+                game.addBeem = function (x, y, speed, angle,) {
+                    var beem = new Sprite(16, 16);
+                    beem.image = game.assets["icon0.png"];
+                    beem.x = x
+                    beem.y = y
+                    beem.turn = 0;
+                    beem.speed = speed;
+                    beem.angle = angle;
+                    game.rootScene.addChild(beem);
+
+                    if (beem.angle == 0) {
+                        beem.x = 320;
+                        beem.frame = 50;
+                    } else {
+                        beem.y = 0;
+                        beem.frame = 60;
+                    }
+                    beem.addEventListener("enterframe", function () {
+                        // beem.rotation = beem.turn;
+                        // beem.turn = beem.turn + 100;
+
+                        if (beem.angle == 0) {
+                            beem.x -= beem.speed;
+                            if (beem.x <= 0) {
+                                game.rootScene.removeChild(beem);
+                            }
+                        } else {
+                            beem.y += beem.speed;
+                            if (beem.y >= 320) {
+                                game.rootScene.removeChild(beem);
+                            }
+                        }
+
+                        if (plane.within(beem, 16)) {
+                            // game.assets["beem.mp3"].play();
+                            game.rootScene.removeChild(beem);
+                            // game.stop();
+                        }
+
+                    })
+                };
+
+                game.rootScene.addEventListener("enterframe", function () {
+                    game.count++;
+                    label_time.text = "score : " +Math.floor( game.count/3*2);
+                    if (game.count % 25 == 0) {
+                        var hole = 0;
+                        hole = Math.floor(Math.random() * 23)
+                        var yy = 1;
+                        var xx = 1;
+                        var angle = Math.floor(Math.random() * 2)
+                        for (var i = 0; i < 32; i++) {
+                            if (i >= hole && i <= hole + 9) {
+
+                            } else {
+                                game.addBeem(xx, yy, 7, angle);
+                            }
+                            yy = yy + 10
+                            xx = xx + 10
+
+                        }
+                    }
+                })
+
+
+            };
+
+            /**
+             * Core#start
+             * ゲームを開始する。この関数を実行するまで、ゲームは待機状態となる。
+             * 代わりに Core#debug を使うことで、デバッグモードで起動することができる。
+             * Core#pause(); で一時停止し、 Core#resume(); で再開することができる。
+             */
+            game.start();
+        };
+
+
+        /**
+         * 生き残るゲーム
+         * 時間が増えるほど得点が高い!!
+         * アイテム要素あり
+         * バリア、加速、ビームの減速、穴の拡大、残機増加
+         * 難易度、穴の縮小、ビームの加速、頻度
+         * 残機要素
+         */
+    </script>
+</body>
+
+</html>
