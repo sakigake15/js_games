@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <script type="text/javascript" src="js/build/enchant.js"></script>
+</head>
+
+<body>
+    <script>
+        enchant(); //おまじない
+        window.onload = function () {
+            var game = new Game(320, 320); //Gameオブジェクトを320×320で生成
+
+            game.preload("chara1.png");
+
+            game.onload = function () { //Gameオブジェクトができたら以下を起動
+
+
+                // タイトルシーンを作り、返す関数
+                var createTitleScene = function () {
+                    var scene = new Scene();  // 新しいシーンを作る
+                    // 新しいラベルを作る
+                    var label = new Label('タイトルシーン タッチでゲームシーンへ'); scene.addChild(label); 　// シーンにラベルに追加
+                    scene.backgroundColor = 'rgba(255, 230, 0, 1)';   // シーンの背景色を設定
+                    scene.addEventListener(Event.TOUCH_START, function (e) {
+                        // シーンにタッチイベントを設定
+                        //現在表示しているシーンをゲームシーンに置き換えます
+                        game.replaceScene(createGameScene());
+                    });
+                    // この関数内で作ったシーンを呼び出し元に返します(return)
+                    return scene;
+                };
+
+                // ゲームシーンを作り、返す関数
+                var createGameScene = function () {
+                    var scene = new Scene();        // 新しいシーンを作る
+                    var label = new Label('ゲームシーン');        // 新しいラベル(文字)を作る
+                    scene.addChild(label);          // シーンにラベルに追加
+                    scene.backgroundColor = 'rgba(255, 200, 0, 1)';  // シーンの背景色を設定
+
+                    //ここにメインの処理を書く
+                    bear1 = new Sprite(32, 32);
+                    bear1.image = game.assets["chara1.png"];
+                    bear1.x = 0;
+                    bear1.y = 160;
+                    bear1.frame = 2;
+                    scene.addChild(bear1);
+                    bear1.addEventListener(Event.TOUCH_START, function(e){
+                        game.pushScene(createGameoverScene());
+                    })
+                    return scene;
+                };
+
+                // ゲームオーバーシーンを作り、返す関数
+                var createGameoverScene = function () {
+                    var scene = new Scene();                // 新しいシーンを作る
+                    // 新しいラベル(文字)を作る
+                    var label = new Label('ゲームオーバーシーン タッチでゲームシーンに戻る');
+                    label.x = 0;                            // 横位置調整
+                    label.y = 20;                           // 縦位置調整
+                    scene.addChild(label);                  // シーンにラベルに追加
+                    scene.backgroundColor = 'rgba(0, 0, 255, 1)';      // シーンの背景色を設定
+                    scene.addEventListener(Event.TOUCH_START, function (e) {
+                        // シーンにタッチイベントを設定
+                        //現在表示しているシーンを外し、直前のシーンを表示します
+                        // game.popScene();
+                        game.replaceScene(createTitleScene());
+                    });
+                    // この関数内で作ったシーンを呼び出し元に返します(return)
+                    return scene;
+                };
+
+                // ゲームのSceneをタイトルシーンに置き換えます
+                game.replaceScene(createTitleScene());
+            }
+            game.start();//ゲーム開始
+
+        }
+
+    </script>
