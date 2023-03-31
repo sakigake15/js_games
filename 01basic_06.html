@@ -7,6 +7,12 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Document</title>
     <script type="text/javascript" src="js/build/enchant.js"></script>
+    <style>
+        body {
+            background-color: #34355f;
+            margin: 0;
+        }
+    </style>
 </head>
 
 <body>
@@ -17,27 +23,28 @@
 
             game.preload("chara1.png", "star_get.mp3", "icon0.png", "bg_1.png", "plane.png", "bg_2.png", "title_space_panic.png", "beem.mp3", "icon2.png", "plane_shields.png", "fire.png");
             game.fps = 15;
+            game.highscore = 0
             game.onload = function () { //Gameオブジェクトができたら以下を起動
-                
+
 
                 // タイトルシーンを作り、返す関数
                 var createTitleScene = function () {
                     var scene = new Scene();  // 新しいシーンを作る
-                    
+
                     //タイトル画面
                     var bg = new Sprite(320, 320)
                     bg.image = game.assets["bg_2.png"]
                     bg.scaleY = 1;
                     bg.y = 0
                     scene.addChild(bg);
-                    
+
                     //ゲーム画面、終了画面
                     var bg2 = new Sprite(300, 62)
                     bg2.image = game.assets["title_space_panic.png"]
                     bg2.x = 10
                     bg2.y = 40
                     scene.addChild(bg2);
-                    
+
                     //タイトルのラベル
                     var label = new Label("");
                     label.font = "16px impact"
@@ -46,7 +53,7 @@
                     label.x = 115
                     label.y = 160
                     scene.addChild(label)
-                    
+
                     scene.addEventListener(Event.TOUCH_START, function (e) {
                         // シーンにタッチイベントを設定
                         //現在表示しているシーンをゲームシーンに置き換えます
@@ -63,15 +70,14 @@
                     scene.addChild(label);          // シーンにラベルに追加
                     scene.backgroundColor = 'rgba(255, 200, 0, 1)';  // シーンの背景色を設定
                     game.count = 0;//スコアを初期化
-                    
+
                     //ここにメインの処理を書く
                     game.count = 0
                     game.atatta = 0
                     game.bariastart = 0
-                    
                     //バリア
                     var baria;
-                    
+
                     //背景
                     var bg = new Sprite(320, 320)
                     bg.backgroundColor = "rgb(0,200,255)";
@@ -81,7 +87,7 @@
                     bg.y = 120
                     bg.x = 0
                     scene.addChild(bg);
-                    
+
                     //スコア
                     var label_time = new Label("");
                     scene.addChild(label_time)
@@ -89,6 +95,14 @@
                     label_time.color = "white"
                     label_time.text = "score : " + game.count;
                     label_time.y = 0;
+                    //ハイスコア
+                    var label_highscore = new Label("");
+                    scene.addChild(label_highscore)
+                    label_highscore.font = "16px impact"
+                    label_highscore.color = "white"
+                    label_highscore.text = "highscore : " + game.highscore;
+                    label_highscore.y = 0;
+                    label_highscore.x = 215;
                     //ビーム
                     game.baria_hantei = 0
                     game.hole_size = 0
@@ -104,7 +118,7 @@
                     plane.frame = 0;
                     plane.speed = 15;
                     scene.addChild(plane);
-                    
+
                     //背景に対するタッチしたら動く
                     bg.addEventListener(Event.TOUCH_START, function (e) {
                         //タッチ操作
@@ -230,8 +244,8 @@
                         baria.image = game.assets["plane_shields.png"]
                         baria.frame = 0;
                         baria.rotation = 90
-                        baria.x = plane.x-8
-                        baria.y = plane.y-8
+                        baria.x = plane.x - 8
+                        baria.y = plane.y - 8
                         scene.addChild(baria)
 
                         baria.addEventListener("enterframe", function () {
@@ -252,8 +266,8 @@
                         kasoku.image = game.assets["fire.png"]
                         kasoku.frame = 0;
                         kasoku.rotation = 0
-                        kasoku.x = plane.x-25
-                        kasoku.y = plane.y-25
+                        kasoku.x = plane.x - 25
+                        kasoku.y = plane.y - 25
                         plane.speed = 30
                         //後ろ、下につける(加速のエフェクトを,飛行機の下に)
                         scene.insertBefore(kasoku, plane)
@@ -303,30 +317,30 @@
                             hole_size = 9 + game.hole_size
                             beem_speed = 7 + game.beem_speed
                             beem_hindo = 25 + game.beem_hindo
-        
+
                         } else if (game.score <= 200) {
                             hole_size = 7 + game.hole_size
-        
+
                         } else if (game.score <= 300) {
                             hole_size = 7 + game.hole_size
                             beem_speed = 10 + game.beem_speed
-        
+
                         } else if (game.score <= 400) {
                             hole_size = 7 + game.hole_size
                             beem_speed = 7 + game.beem_speed
                             beem_hindo = 18 + game.beem_hindo
-        
+
                         } else if (game.score <= 500) {
                             hole_size = 5 + game.hole_size
                             beem_hindo = 25 + game.beem_hindo
-        
+
                         } else if (game.score <= 600) {
                             hole_size = 5 + game.hole_size
                             beem_speed = 13 + game.beem_speed
                             beem_hindo = 23 + game.beem_hindo
                         }
 
-                        
+
                         //3,穴の拡大
                         if (game.hole_hantei == 1 && game.holestart < game.count - 200) {
                             game.hole_hantei = 0
@@ -354,10 +368,10 @@
                                 beem_x = beem_x + 10
                             }
                         }
-                        
+
                         //アイテムの生成
                         if (game.count % 100 == 0) {
-                            game.additem(Math.floor(Math.random() * 300)+10, Math.floor(Math.random() * 300)+10, Math.floor(Math.random() * 5));//アイテムの切り替え
+                            game.additem(Math.floor(Math.random() * 240) + 40, Math.floor(Math.random() * 240) + 40, Math.floor(Math.random() * 5));//アイテムの切り替え
                         }
                     })
                     return scene;
@@ -384,13 +398,33 @@
                     label.y = 80
                     scene.addChild(label)
 
+                    //スコアのラベル
                     var label_score = new Label("");
                     label_score.font = "32px impact"
                     label_score.color = "white"
                     label_score.text = "SCORE:" + game.score;
-                    label_score.x = 90
+                    label_score.x = 95
                     label_score.y = 160
                     scene.addChild(label_score)
+
+                    //ハイスコアの処理
+                    var hightext=0
+                    if (game.highscore < game.score) {
+                        game.highscore = game.score
+                        hightext="NEW RECORD!!!"
+                    } else {
+                        hightext= "HIGHSCORE:" + game.highscore
+                    }
+
+                    //ハイスコアのラベル
+                    var label_highscore = new Label("");
+                    label_highscore.font = "32px impact"
+                    label_highscore.color = "white"
+                    label_highscore.text =hightext;
+                    label_highscore.x = 60
+                    label_highscore.y = 200
+                    scene.addChild(label_highscore)
+
                     // シーンの背景色を設定
                     scene.addEventListener(Event.TOUCH_START, function (e) {
                         // シーンにタッチイベントを設定
