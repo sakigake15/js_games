@@ -17,30 +17,27 @@
 
             game.preload("chara1.png", "star_get.mp3", "icon0.png", "bg_1.png", "plane.png", "bg_2.png", "title_space_panic.png", "beem.mp3", "icon2.png", "plane_shields.png", "fire.png");
             game.fps = 15;
-            game.count = 0
-            game.atatta = 0
-            game.bariastart = 0
             game.onload = function () { //Gameオブジェクトができたら以下を起動
-
+                
 
                 // タイトルシーンを作り、返す関数
                 var createTitleScene = function () {
                     var scene = new Scene();  // 新しいシーンを作る
-
+                    
                     //タイトル画面
                     var bg = new Sprite(320, 320)
                     bg.image = game.assets["bg_2.png"]
                     bg.scaleY = 1;
                     bg.y = 0
                     scene.addChild(bg);
-
+                    
                     //ゲーム画面、終了画面
                     var bg2 = new Sprite(300, 62)
                     bg2.image = game.assets["title_space_panic.png"]
                     bg2.x = 10
                     bg2.y = 40
                     scene.addChild(bg2);
-
+                    
                     //タイトルのラベル
                     var label = new Label("");
                     label.font = "16px impact"
@@ -49,7 +46,7 @@
                     label.x = 115
                     label.y = 160
                     scene.addChild(label)
-
+                    
                     scene.addEventListener(Event.TOUCH_START, function (e) {
                         // シーンにタッチイベントを設定
                         //現在表示しているシーンをゲームシーンに置き換えます
@@ -68,6 +65,9 @@
                     game.count = 0;//スコアを初期化
                     
                     //ここにメインの処理を書く
+                    game.count = 0
+                    game.atatta = 0
+                    game.bariastart = 0
                     
                     //バリア
                     var baria;
@@ -197,12 +197,12 @@
                                 if (kinds == 0) {
                                     game.addbaria()
                                     game.baria_hantei = 1
-                                    game.bariastart = game.score
+                                    game.bariastart = game.count
 
                                 } else if (kinds == 1) {
                                     game.addkasoku()
                                     game.kasoku_hantei = 1
-                                    game.kasokustart = game.score
+                                    game.kasokustart = game.count
 
                                 } else if (kinds == 2) {//残機追加
                                     if (plane.frame != 0) {
@@ -210,12 +210,12 @@
                                     }
 
                                 } else if (kinds == 3) {
-                                    game.holestart = game.score
+                                    game.holestart = game.count
                                     game.hole_hantei = 1
                                     game.hole_size = 10
 
                                 } else if (kinds == 4) {
-                                    game.beemstart = game.score
+                                    game.beemstart = game.count
                                     game.beem_hantei = 1
                                     game.beem_speed = -2
                                     game.beem_hindo = 5
