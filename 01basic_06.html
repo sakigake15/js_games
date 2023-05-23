@@ -21,7 +21,9 @@
         window.onload = function () {
             var game = new Game(320, 320); //Gameオブジェクトを320×320で生成
 
-            game.preload("chara1.png", "star_get.mp3", "icon0.png", "bg_1.png", "plane.png", "bg_2.png", "title_space_panic.png", "beem.mp3", "icon2.png", "plane_shields.png", "fire.png");
+            game.preload("chara1.png", "star_get.mp3", "icon0.png", "bg_1.png", "plane.png", "bg_2.png", "title_space_panic.png", "beem.mp3",
+             "icon2.png", "plane_shields.png", "fire.png", "bgm1.mp3","zanki.theme.mp3","kakudai.theme.mp3","gensoku.theme.mp3",
+             "kasoku.theme.mp3","baria.theme.mp3","highscore.mp3");
             game.fps = 15;
             game.highscore = 0
             game.onload = function () { //Gameオブジェクトができたら以下を起動
@@ -70,6 +72,9 @@
                     scene.addChild(label);          // シーンにラベルに追加
                     scene.backgroundColor = 'rgba(255, 200, 0, 1)';  // シーンの背景色を設定
                     game.count = 0;//スコアを初期化
+                    var bgm = game.assets['bgm1.mp3'];
+                    bgm.play();
+                    bgm.src.loop = true;
 
                     //ここにメインの処理を書く
                     game.count = 0
@@ -194,6 +199,7 @@
                     //アイテム
                     game.additem = function (x, y, kinds) {
                         var item_list = [8, 16, 29, 30, 32] //バリア8、加速16、残機増加29、穴の拡大30、ビームの減速32
+                        var bgm_list = ["baria.theme.mp3","kasoku.theme.mp3","zanki.theme.mp3","kakudai.theme.mp3","gensoku.theme.mp3"]
                         var item = new Sprite(16, 16);
                         item.image = game.assets["icon2.png"];
                         item.x = x
@@ -205,15 +211,21 @@
                         item.addEventListener("enterframe", function () {
                             //アイテムに当たった時
                             if (plane.within(item, 16)) {
-                                game.assets["star_get.mp3"].play();
+                                game.assets[bgm_list[kinds]].play();
                                 scene.removeChild(item);
 
                                 if (kinds == 0) {
+                                    if (game.baria_hantei == 1) {
+                                        scene.removeChild(baria);
+                                    }
                                     game.addbaria()
                                     game.baria_hantei = 1
                                     game.bariastart = game.count
 
                                 } else if (kinds == 1) {
+                                    if (game.kasoku_hantei == 1) {
+                                        scene.removeChild(kasoku);
+                                    }
                                     game.addkasoku()
                                     game.kasoku_hantei = 1
                                     game.kasokustart = game.count
@@ -297,6 +309,7 @@
                             plane.frame++
                             //4回当たったらゲームオーバーの処理
                             if (plane.frame >= 4) {
+                                bgm.stop()
                                 game.replaceScene(createGameoverScene());
                             }
                         }
@@ -370,7 +383,7 @@
                         }
 
                         //アイテムの生成
-                        if (game.count % 100 == 0) {
+                        if (game.count % 50 == 0) {
                             game.additem(Math.floor(Math.random() * 240) + 40, Math.floor(Math.random() * 240) + 40, Math.floor(Math.random() * 5));//アイテムの切り替え
                         }
                     })
@@ -408,19 +421,20 @@
                     scene.addChild(label_score)
 
                     //ハイスコアの処理
-                    var hightext=0
+                    var hightext = 0
                     if (game.highscore < game.score) {
                         game.highscore = game.score
-                        hightext="NEW RECORD!!!"
+                        hightext = "NEW RECORD!!!"
+                        game.assets["highscore.mp3"].play();
                     } else {
-                        hightext= "HIGHSCORE:" + game.highscore
+                        hightext = "HIGHSCORE:" + game.highscore
                     }
 
                     //ハイスコアのラベル
                     var label_highscore = new Label("");
                     label_highscore.font = "32px impact"
                     label_highscore.color = "white"
-                    label_highscore.text =hightext;
+                    label_highscore.text = hightext;
                     label_highscore.x = 60
                     label_highscore.y = 200
                     scene.addChild(label_highscore)
