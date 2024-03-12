@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Document</title>
+    <script src="enchant.min.js"></script>
+</head>
+
+<body>
+    <script>
+        enchant();
+        window.onload = function () {
+            var game = new Game(320, 400);
+            game.preload("map2.png");
+            game.onload = function () {
+                var m_data = new Array(); //表示用マップ領域
+                var m_hit = new Array();  //衝突判定用マップ領域
+
+                //マップの初期化
+                for (i = 0; i < 19; i++) {
+                    m_data[i] = new Array();
+                    m_hit[i] = new Array();
+                    for (j = 0; j < 19; j++) {
+                        var flag = 2; //壁
+                        if (i > 0 && i < 18 && j > 0 && j < 18) { //端以外の時
+                            if (i % 2 || j % 2) { //奇数行または奇数列の時
+                                flag = 1; //通路
+                            }
+                        }
+                        m_data[i][j] = flag;    //壁の時2、通路の時1を入れる。
+                        m_hit[i][j] = flag - 1; //壁の時1、壁以外の時0を入れる。
+                    }
+                }
+                console.log(m_data);
+                console.log(m_hit);
+
+                // 迷路作成
+                dx = [1, 0, -1, 0]; //右、x、左、xの順番
+                dy = [0, 1, 0, -1]; //x、下、x、上の順番
+                for (i = 2; i < 18; i += 2) { //奇数行のみ処理
+                    for (j = 2; j < 18; j += 2) { //偶数列のみ処理
+                        var r = 3;
+                        if (i == 2) { //一番上のみ上の方向を追加。
+                            r = 4;
+                        }
+                        var rand = Math.floor(Math.random() * r); //0～r-1の乱数
+                        m_data[i + dy[rand]][j + dx[rand]] = 2; //指定した方向に壁を作成
+                        m_hit[i + dy[rand]][j + dx[rand]] = 1; //指定した方向にあたり判定。
+                    }
+                }
+
+                console.log(m_data)
+                for (i = 1; i < 18; i += 2) { //奇数行のみ処理
+                    for (j = 1; j < 18; j += 2) { //偶数列のみ処理
+                        var t_jiro = m_hit[i - 1][j] + m_hit[i + 1][j] + m_hit[i][j - 1] + m_hit[i][j + 1]//上下左右のヒットの合計→3ならT字路
+                        if (t_jiro <=1) {
+                            m_data[i][j]=3
+                        }
+                    }
+                }
+
+                var map = new Map(16, 16);
+                map.image = game.assets["map2.png"];
+                map.loadData(m_data);
+                map.collisionData = m_hit;
+                game.rootScene.addChild(map);
+            };
+            game.start();
+        };
+    </script>
+</body>
+
+</html>
